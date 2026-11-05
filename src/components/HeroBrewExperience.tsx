@@ -101,11 +101,20 @@ export default function HeroBrewExperience({
   return (
     <section
       id="craft"
-      className="relative min-h-[820px] md:min-h-[860px] bg-[#F7F3EC] flex flex-col justify-between overflow-hidden border-b border-[#E7DFD3] select-none"
+      className="relative min-h-[840px] md:min-h-[880px] bg-[#161211] flex flex-col justify-between overflow-hidden border-b border-[#E7DFD3] select-none text-[#1C1817]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Background Subtle Gradient & Grain Glow */}
+      {/* Empty Coffee Shop Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-transform duration-1000 scale-105"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=2400&q=85')",
+        }}
+      />
+      {/* Warm Ambient Tint & Blur to give tactile atmospheric depth */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F7F3EC]/92 via-[#F7F3EC]/84 to-[#F7F3EC]/94 backdrop-blur-[2px] pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_50%_40%,#EDE2D1_0%,transparent_70%)]" />
 
       {/* Floating Beans & Atmospheric Particles */}

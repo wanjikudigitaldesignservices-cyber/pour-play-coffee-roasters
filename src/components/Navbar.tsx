@@ -169,13 +169,6 @@ export default function Navbar({
               <span>Cafés</span>
             </a>
             <a
-              href="#franchise"
-              className="hover:text-[#1C1817] hover:font-semibold transition-colors flex items-center space-x-1"
-            >
-              <Sliders className="w-3.5 h-3.5 text-[#C85A2B]" />
-              <span>Franchise Hub</span>
-            </a>
-            <a
               href="#journal"
               className="hover:text-[#1C1817] hover:font-semibold transition-colors flex items-center space-x-1"
             >
@@ -195,10 +188,10 @@ export default function Navbar({
             </button>
 
             <a
-              href="#franchise"
+              href="#find-your-cup"
               className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-bold text-white bg-[#1C1817] hover:bg-[#C85A2B] px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all uppercase tracking-wider"
             >
-              <span>Partner With Us</span>
+              <span>Find Your Cup</span>
             </a>
 
             {/* Cart Trigger */}
@@ -265,16 +258,6 @@ export default function Navbar({
                 className="py-1 border-b border-[#EAE1D2]"
               >
                 Global Cafés & Directory
-              </a>
-              <a
-                href="#franchise"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1 border-b border-[#EAE1D2] flex items-center justify-between"
-              >
-                <span>Franchise Opportunities & ROI</span>
-                <span className="text-[10px] bg-[#C85A2B] text-white px-2 py-0.5 rounded-full uppercase">
-                  Open
-                </span>
               </a>
               <a
                 href="#journal"

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import HeroBrewExperience from "@/components/HeroBrewExperience";
-import MultinationalFranchiseHub from "@/components/MultinationalFranchiseHub";
 import RoasteryMenu from "@/components/RoasteryMenu";
 import GlobalCafesDirectory from "@/components/GlobalCafesDirectory";
 import JournalSection from "@/components/JournalSection";
@@ -95,23 +94,36 @@ export default function HomePage() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F3EC] text-[#1C1817]">
-      {/* 1. Global Navigation */}
-      <Navbar
-        cartCount={totalCartCount}
-        onOpenCart={() => setCartOpen(true)}
-        onOpenCMS={() => setCmsOpen(true)}
-        onSelectStep={(idx) => {
-          setActiveBrewStep(idx);
-          const craftEl = document.getElementById("craft");
-          if (craftEl) craftEl.scrollIntoView({ behavior: "smooth" });
+    <div className="min-h-screen flex flex-col bg-[#F7F3EC] text-[#1C1817] relative selection:bg-[#DF9E51] selection:text-[#161211]">
+      {/* Empty Coffee Shop Background Across Homepage */}
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-25 filter contrast-105"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=2400&q=85')",
         }}
-        currentRegion={currentRegion}
-        onRegionChange={(reg) => setCurrentRegion(reg)}
       />
+      <div className="fixed inset-0 z-0 bg-[#F7F3EC]/80 backdrop-blur-[0.5px] pointer-events-none" />
 
-      {/* 2. Hero Interactive Brew Journey: 1. GRIND, 2. POUR, 3. SIP, FIND YOUR CUP (EXACT VIDEO RECREATION) */}
-      <main className="flex-1">
+      {/* 1. Global Navigation */}
+      <div className="relative z-40">
+        <Navbar
+          cartCount={totalCartCount}
+          onOpenCart={() => setCartOpen(true)}
+          onOpenCMS={() => setCmsOpen(true)}
+          onSelectStep={(idx) => {
+            setActiveBrewStep(idx);
+            const craftEl = document.getElementById("craft");
+            if (craftEl) craftEl.scrollIntoView({ behavior: "smooth" });
+          }}
+          currentRegion={currentRegion}
+          onRegionChange={(reg) => setCurrentRegion(reg)}
+        />
+      </div>
+
+      {/* 2. Main Content */}
+      <main className="flex-1 relative z-10">
+        {/* Hero Interactive Brew Journey: 1. GRIND, 2. POUR, 3. SIP, FIND YOUR CUP (with Empty Coffee Shop Backdrop) */}
         <HeroBrewExperience
           onAddToCart={handleAddToCart}
           products={products}
@@ -119,30 +131,29 @@ export default function HomePage() {
           onStepChange={(s) => setActiveBrewStep(s)}
         />
 
-        {/* 3. Multinational Franchise Hub: ROI Calculator, Global Models & Territorial Application */}
-        <MultinationalFranchiseHub />
-
-        {/* 4. Roastery Menu: Single Origins, Blends, Precision Gear (Grinders & Kettles) */}
+        {/* 3. Roastery Menu: Single Origins, Blends, Precision Gear (Grinders & Kettles) */}
         <RoasteryMenu
           products={products}
           onAddToCart={handleAddToCart}
         />
 
-        {/* 5. Worldwide Flagship Cafés Directory (Tokyo, New York, London, Milan, Seoul, Nairobi, Dubai, Sydney) */}
+        {/* 4. Worldwide Flagship Cafés Directory (Tokyo, New York, London, Milan, Seoul, Nairobi, Dubai, Sydney) */}
         <GlobalCafesDirectory
           stores={stores}
           currentRegion={currentRegion}
           onSelectStoreRegion={(region) => setCurrentRegion(region)}
         />
 
-        {/* 6. The Roaster's Journal & Science Editorial (Blogs & Community Discussion) */}
+        {/* 5. The Roaster's Journal & Science Editorial (Blogs & Community Discussion) */}
         <JournalSection blogs={blogs} />
       </main>
 
-      {/* 7. Multinational Footer */}
-      <Footer onOpenCMS={() => setCmsOpen(true)} />
+      {/* 6. Multinational Footer */}
+      <div className="relative z-10">
+        <Footer onOpenCMS={() => setCmsOpen(true)} />
+      </div>
 
-      {/* 8. Slide-Out Shopping Bag & Direct Supabase Checkout */}
+      {/* 7. Slide-Out Shopping Bag & Direct Supabase Checkout */}
       <CartDrawer
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
@@ -152,7 +163,7 @@ export default function HomePage() {
         onClearCart={handleClearCart}
       />
 
-      {/* 9. Full-Featured CMS Admin Dashboard Modal */}
+      {/* 8. Full-Featured CMS Admin Dashboard Modal */}
       <AdminCMSModal
         isOpen={cmsOpen}
         onClose={() => setCmsOpen(false)}

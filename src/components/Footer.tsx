@@ -105,22 +105,22 @@ export default function Footer({ onOpenCMS }: FooterProps) {
           {/* Nav Col 2 */}
           <div className="space-y-3">
             <div className="text-xs font-bold uppercase tracking-widest text-[#DF9E51]">
-              Franchise & Global
+              Worldwide Flagships
             </div>
             <ul className="space-y-2 text-xs text-neutral-400">
               <li>
-                <a href="#franchise" className="hover:text-white transition-colors">
-                  Franchise Overview
+                <a href="#cafes" className="hover:text-white transition-colors">
+                  Tokyo Shibuya Roastery
                 </a>
               </li>
               <li>
-                <a href="#franchise" className="hover:text-white transition-colors">
-                  Interactive ROI Calculator
+                <a href="#cafes" className="hover:text-white transition-colors">
+                  New York Soho Foundry
                 </a>
               </li>
               <li>
-                <a href="#franchise" className="hover:text-white transition-colors">
-                  Territory Application
+                <a href="#cafes" className="hover:text-white transition-colors">
+                  London Shoreditch Brickworks
                 </a>
               </li>
               <li>
@@ -222,7 +222,7 @@ export default function Footer({ onOpenCMS }: FooterProps) {
             © 2026 POUR / PLAY GLOBAL ROASTERS CO. All rights reserved.
           </div>
           <div className="flex space-x-6">
-            <a href="#franchise" className="hover:text-white">Franchise Disclosure (FDD)</a>
+            <a href="#cafes" className="hover:text-white">Flagship Cafés</a>
             <a href="#journal" className="hover:text-white">Ethics & Direct Trade</a>
             <a href="#menu" className="hover:text-white">Global Shipping Policy</a>
             <button onClick={onOpenCMS} className="hover:text-[#DF9E51]">
