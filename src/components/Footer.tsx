@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import {
   Globe,
   Mail,
@@ -35,18 +36,7 @@ export default function Footer({ onOpenCMS }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#2E2825]">
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-baseline space-x-2">
-              <span className="font-extrabold text-2xl tracking-tight text-white font-sans">
-                POUR
-              </span>
-              <span className="text-2xl font-light text-[#C85A2B]">/</span>
-              <span className="font-extrabold text-2xl tracking-tight text-white font-sans">
-                PLAY
-              </span>
-              <span className="text-[10px] font-bold tracking-widest uppercase bg-[#2C2725] text-[#DF9E51] px-2 py-0.5 rounded ml-2">
-                GLOBAL ROASTERS
-              </span>
-            </div>
+            <BrandLogo variant="light" size="lg" withTagline={true} />
 
             <p className="text-xs text-neutral-400 max-w-sm leading-relaxed">
               Architectural specialty coffee and precision extraction. Operating

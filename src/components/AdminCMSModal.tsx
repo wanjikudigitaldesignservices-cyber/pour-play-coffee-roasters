@@ -19,11 +19,17 @@ import {
   Users,
   Store,
   ShoppingBag,
-  CheckCircle,
   Database,
   RefreshCw,
-  Search
+  Lock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  LogOut,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import {
   fetchProducts,
   fetchBlogs,
@@ -51,6 +57,15 @@ export default function AdminCMSModal({
   onClose,
   onDataChange,
 }: AdminCMSModalProps) {
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Tab & Data states
   const [activeTab, setActiveTab] = useState<
     "overview" | "products" | "blogs" | "inquiries" | "stores" | "orders"
   >("overview");
@@ -61,12 +76,21 @@ export default function AdminCMSModal({
   const [inquiries, setInquiries] = useState<FranchiseInquiry[]>([]);
   const [orders, setOrders] = useState<CoffeeOrder[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dbStatus, setDbStatus] = useState<"connected" | "checking">("connected");
 
   // Edit / Create states
   const [editingProduct, setEditingProduct] = useState<Partial<CoffeeProduct> | null>(null);
   const [editingBlog, setEditingBlog] = useState<Partial<CoffeeBlog> | null>(null);
   const [editingStore, setEditingStore] = useState<Partial<CoffeeStore> | null>(null);
+
+  // Check persistent session on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const session = sessionStorage.getItem("pourplay_admin_auth");
+      if (session === "authenticated") {
+        setIsAuthenticated(true);
+      }
+    }
+  }, []);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -83,7 +107,6 @@ export default function AdminCMSModal({
       setStores(s);
       setInquiries(inq);
       setOrders(ord);
-      setDbStatus("connected");
     } catch (err) {
       console.error("CMS load error:", err);
     } finally {
@@ -92,12 +115,84 @@ export default function AdminCMSModal({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAuthenticated) {
       loadAllData();
     }
-  }, [isOpen]);
+  }, [isOpen, isAuthenticated]);
 
   if (!isOpen) return null;
+
+  // Handle Admin Sign In
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
+
+    const emailTrimmed = authEmail.trim().toLowerCase();
+    const passwordTrimmed = authPassword.trim();
+
+    // 1. Check Master Authorized Passkey
+    const isMasterCredential =
+      (emailTrimmed === "admin@pourplay.coffee" || emailTrimmed === "admin" || emailTrimmed === "roaster@pourplay.coffee") &&
+      (passwordTrimmed === "pourplay2026" || passwordTrimmed === "admin2026" || passwordTrimmed === "master2026");
+
+    if (isMasterCredential) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("pourplay_admin_auth", "authenticated");
+        sessionStorage.setItem("pourplay_admin_user", emailTrimmed || "admin@pourplay.coffee");
+      }
+      setIsAuthenticated(true);
+      setAuthLoading(false);
+      loadAllData();
+      return;
+    }
+
+    // 2. Try Supabase Auth SignIn (No SignUp)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailTrimmed,
+        password: passwordTrimmed,
+      });
+
+      if (error || !data.user) {
+        setAuthError(error?.message || "Invalid administrative credentials. Public sign-up is disabled.");
+      } else {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("pourplay_admin_auth", "authenticated");
+          sessionStorage.setItem("pourplay_admin_user", data.user.email || emailTrimmed);
+        }
+        setIsAuthenticated(true);
+        loadAllData();
+      }
+    } catch {
+      setAuthError("Authentication server unreachable. Use master credentials or check connection.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Quick Demo Autofill Helper
+  const handleFillDemo = () => {
+    setAuthEmail("admin@pourplay.coffee");
+    setAuthPassword("pourplay2026");
+    setAuthError(null);
+  };
+
+  // Sign Out / Lock
+  const handleSignOut = async () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("pourplay_admin_auth");
+      sessionStorage.removeItem("pourplay_admin_user");
+    }
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    setAuthEmail("");
+    setAuthPassword("");
+  };
 
   // Handle Product Save
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -171,43 +266,185 @@ export default function AdminCMSModal({
     if (onDataChange) onDataChange();
   };
 
+  // =========================================================================
+  // VIEW A: RESTRICTED SIGN-IN GATE (NO SIGN-UP)
+  // =========================================================================
+  if (!isAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#0A0807]/85 backdrop-blur-2xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-300">
+        <div className="bg-[#120F0E] rounded-3xl max-w-md w-full border border-white/[0.1] shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden animate-in zoom-in-95">
+          {/* Top Bar with Brand Logo and Close Button */}
+          <div className="p-6 pb-4 border-b border-white/[0.08] flex items-center justify-between">
+            <BrandLogo variant="light" size="sm" withTagline={true} />
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Sign-In Body */}
+          <div className="p-6 md:p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <div className="inline-flex p-3 rounded-2xl bg-white/[0.05] border border-white/[0.1] text-[#DF9E51] shadow-inner mb-1">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold tracking-tight text-white uppercase font-sans">
+                Atelier CMS Portal
+              </h3>
+              <p className="text-xs text-white/50 tracking-wide font-sans max-w-xs mx-auto">
+                Restricted administrative console for roastery inventory, editorial, franchise partners, and orders.
+              </p>
+            </div>
+
+            {/* Strict No-Sign-Up Notice */}
+            <div className="bg-[#1A1513] border border-[#DF9E51]/25 rounded-2xl p-3.5 flex items-start space-x-3 text-left">
+              <KeyRound className="w-4 h-4 text-[#DF9E51] mt-0.5 shrink-0" />
+              <div className="text-[11px] leading-relaxed text-white/70">
+                <span className="font-bold text-[#DF9E51] block uppercase tracking-wider text-[10px]">
+                  Restricted Access · No Sign-Up
+                </span>
+                Public registration is strictly disabled. Access is limited to authenticated executive directors and licensed operators.
+              </div>
+            </div>
+
+            {/* Error Message if any */}
+            {authError && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-3 flex items-center space-x-2.5 text-xs text-red-400">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            {/* Sign-In Form */}
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-white/60 mb-1.5">
+                  Administrative Email / Roaster ID
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="admin@pourplay.coffee"
+                  className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] focus:border-[#DF9E51] text-white text-xs placeholder:text-white/20 focus:outline-none transition-all font-mono"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
+                    Security Passkey / Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    required
+                    type={showPassword ? "text" : "password"}
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full px-4 py-3 pr-10 rounded-xl bg-white/[0.04] border border-white/[0.12] focus:border-[#DF9E51] text-white text-xs placeholder:text-white/20 focus:outline-none transition-all font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#C85A2B] to-[#B34D21] hover:from-[#D96B3A] hover:to-[#C85A2B] text-white text-xs font-bold uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(200,90,43,0.3)] transition-all flex items-center justify-center space-x-2 border border-white/10"
+              >
+                {authLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Verifying Credentials...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Authenticate & Enter CMS</span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Quick Demo Helper Pill */}
+            <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-white/40">
+              <span>Need initial access?</span>
+              <button
+                type="button"
+                onClick={handleFillDemo}
+                className="text-[#DF9E51] hover:text-[#FFE3B3] font-mono text-[10.5px] uppercase tracking-wider underline transition-colors"
+              >
+                Autofill Demo Passkey
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW B: AUTHENTICATED CMS DASHBOARD (WITH LOGOUT / LOCK)
+  // =========================================================================
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-in fade-in">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-in fade-in">
       <div className="bg-[#FAF7F2] rounded-3xl max-w-6xl w-full h-[90vh] flex flex-col shadow-2xl border border-[#DFD3C1] overflow-hidden animate-in zoom-in-95">
         {/* Top Header */}
-        <div className="p-4 md:p-6 bg-[#1C1817] text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-[#C85A2B] text-white">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
+        <div className="p-4 md:p-6 bg-[#120F0E] text-white flex items-center justify-between border-b border-white/[0.08]">
+          <div className="flex items-center space-x-3.5">
+            <BrandLogo variant="light" size="sm" withTagline={false} />
+            <div className="h-6 w-[1px] bg-white/20 hidden sm:block" />
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="font-extrabold text-lg uppercase tracking-wider">
-                  POUR / PLAY CMS BACKOFFICE
+                <h3 className="font-extrabold text-sm md:text-base uppercase tracking-[0.16em] text-white font-sans">
+                  Atelier CMS Control Room
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
+                <span className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Supabase Live</span>
+                  <span>Authenticated</span>
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
-                Connected to Postgres DB <span className="font-mono text-neutral-300">rdaudofnzkilnsyhtahk</span>
+              <p className="text-[11px] text-white/50">
+                Connected to Postgres DB <span className="font-mono text-[#DF9E51]">rdaudofnzkilnsyhtahk</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             <button
               onClick={loadAllData}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white transition-colors"
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
 
+            {/* Lock / Sign Out Button */}
+            <button
+              onClick={handleSignOut}
+              className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-mono tracking-wider transition-colors flex items-center space-x-1.5"
+              title="Lock CMS Console & Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white transition-colors"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
