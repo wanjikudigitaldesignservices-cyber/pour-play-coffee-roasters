@@ -95,15 +95,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F3EC] text-[#1C1817] relative selection:bg-[#DF9E51] selection:text-[#161211]">
-      {/* Empty Coffee Shop Background Across Homepage */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-25 filter contrast-105"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=2400&q=85')",
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-[#F7F3EC]/80 backdrop-blur-[0.5px] pointer-events-none" />
+      {/* Subtle page-wide texture — no white covering */}
 
       {/* 1. Global Navigation */}
       <div className="relative z-40">
